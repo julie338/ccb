@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loan Calculator — Clear Cents Bookkeeping</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green:     #317238;
+      --green-dk:  #255a2c;
+      --green-md:  #4a9a52;
+      --green-lt:  #edf6ee;
+      --green-xlt: #f5fbf5;
+      --charcoal:  #434444;
+      --charcoal-2:#636464;
+      --charcoal-3:#9a9b9b;
+      --bg:        #f0f3f0;
+      --surface:   #ffffff;
+      --border:    #dce5dc;
+      --shadow:    0 2px 8px rgba(49,114,56,.07), 0 1px 3px rgba(0,0,0,.05);
+      --shadow-lg: 0 6px 24px rgba(49,114,56,.10), 0 2px 6px rgba(0,0,0,.05);
+      --radius:    14px;
+      --radius-sm: 9px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--charcoal);
+      min-height: 100vh;
+    }
+
+    /* ══ Site header ══ */
+    .site-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .site-logo { height: 96px; width: auto; display: block; }
+    .header-right {
+      font-size: .72rem;
+      color: var(--charcoal-3);
+      text-align: right;
+      letter-spacing: .04em;
+      line-height: 1.5;
+    }
+    .header-right strong { color: var(--green); font-weight: 700; display: block; }
+    @media (max-width: 600px) {
+      .site-header { padding: 12px 16px; }
+      .site-logo { height: 72px; }
+      .header-right { display: none; }
+    }
+
+    /* ══ Page ══ */
+    .wrap { max-width: 980px; margin: 0 auto; padding: 32px 16px 72px; }
+
+    .page-hero { text-align: center; margin-bottom: 28px; }
+    .page-hero h1 {
+      font-size: clamp(1.5rem, 4vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: .02em;
+      color: var(--charcoal);
+    }
+    .page-hero p {
+      font-size: .85rem;
+      color: var(--charcoal-3);
+      margin-top: 6px;
+      letter-spacing: .06em;
+      font-weight: 400;
+    }
+    .green-bar {
+      width: 48px; height: 3px;
+      background: var(--green);
+      border-radius: 99px;
+      margin: 14px auto 0;
+    }
+
+    /* ══ Card ══ */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 26px 28px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 540px) { .card { padding: 20px 16px; } }
+
+    .card-label {
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--charcoal-3);
+      margin-bottom: 18px;
+    }
+
+    /* ══ Inputs ══ */
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 520px) { .input-grid { grid-template-columns: 1fr; } }
+
+    .field label {
+      display: block;
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--charcoal-2);
+      margin-bottom: 7px;
+    }
+    .input-wrap { position: relative; }
+    .sym {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      font-size: .9rem; font-weight: 600; color: var(--charcoal-3);
+      pointer-events: none; user-select: none;
+    }
+    .sym.l { left: 12px; }
+    .sym.r { right: 12px; }
+
+    .field input {
+      width: 100%;
+      font-family: 'Josefin Sans', sans-serif;
+      padding: 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: .97rem;
+      color: var(--charcoal);
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      -moz-appearance: textfield;
+    }
+    .field input::-webkit-outer-spin-button,
+    .field input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .pl input { padding-left: 28px; }
+    .pr input { padding-right: 40px; }
+    .field input[type="date"] { padding: 11px 12px; }
+    .field input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(49,114,56,.14);
+    }
+    .field input::placeholder { color: #cad4ca; }
+    .field input.shake {
+      border-color: #dc2626;
+      box-shadow: 0 0 0 3px rgba(220,38,38,.12);
+    }
+
+    .calc-btn {
+      display: block; width: 100%; margin-top: 22px;
+      padding: 14px;
+      background: var(--green); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: .85rem; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      cursor: pointer;
+      transition: background .15s, transform .1s, box-shadow .15s;
+      box-shadow: 0 2px 8px rgba(49,114,56,.3);
+    }
+    .calc-btn:hover  { background: var(--green-dk); box-shadow: 0 4px 14px rgba(49,114,56,.35); }
+    .calc-btn:active { transform: scale(.99); }
+
+    /* ══ Results ══ */
+    .results { display: none; }
+    .results.on { display: block; }
+
+    /* ══ Stats ══ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px; margin-bottom: 20px;
+    }
+    @media (max-width: 700px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 380px) { .stats-grid { grid-template-columns: 1fr; } }
+
+    .stat {
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 20px;
+      border-top: 4px solid var(--border);
+    }
+    .stat.g  { border-top-color: var(--green); }
+    .stat.c  { border-top-color: var(--charcoal); }
+    .stat.c2 { border-top-color: var(--charcoal-3); }
+    .stat .slbl {
+      font-size: .62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--charcoal-3); margin-bottom: 8px;
+    }
+    .stat .sval {
+      font-size: 1.45rem; font-weight: 700; letter-spacing: -.02em;
+      line-height: 1.1; color: var(--charcoal);
+    }
+    .stat.g .sval { color: var(--green); }
+    .stat .ssub {
+      font-size: .7rem; color: var(--charcoal-3); margin-top: 5px; font-weight: 400;
+    }
+
+    /* ══ Extra payment ══ */
+    .extra-header {
+      display: flex; align-items: baseline;
+      justify-content: space-between; margin-bottom: 14px;
+      flex-wrap: wrap; gap: 6px;
+    }
+    .extra-amount {
+      font-size: 1.6rem; font-weight: 700;
+      letter-spacing: -.02em; color: var(--green);
+      transition: color .2s;
+    }
+    .extra-amount.zero { color: var(--charcoal-3); }
+
+    input[type="range"] {
+      -webkit-appearance: none; width: 100%;
+      height: 6px; border-radius: 99px;
+      background: var(--border); outline: none; cursor: pointer;
+      margin: 0 0 8px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      background: var(--green); border: 3px solid #fff;
+      border-radius: 50%; cursor: pointer;
+      box-shadow: 0 1px 5px rgba(49,114,56,.4);
+      transition: box-shadow .15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      box-shadow: 0 2px 10px rgba(49,114,56,.5);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 20px; height: 20px;
+      background: var(--green); border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 5px rgba(49,114,56,.4);
+    }
+    .slider-ends {
+      display: flex; justify-content: space-between;
+      font-size: .68rem; color: var(--charcoal-3); margin-bottom: 14px;
+    }
+
+    .savings-box {
+      display: flex; align-items: flex-start; gap: 14px;
+      background: var(--green-lt); border: 1px solid rgba(49,114,56,.18);
+      border-radius: var(--radius-sm); padding: 14px 18px;
+      flex-wrap: wrap;
+    }
+    .savings-box.hidden { display: none; }
+    .savings-icon { font-size: 1.6rem; flex-shrink: 0; line-height: 1; }
+    .savings-body { flex: 1 1 160px; }
+    .savings-body strong {
+      display: block; font-size: .9rem; font-weight: 700;
+      color: var(--green-dk); margin-bottom: 3px;
+    }
+    .savings-body span:not(.pill) { font-size: .75rem; color: var(--charcoal-2); }
+    .savings-pills { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .pill {
+      background: var(--green); color: #fff;
+      border-radius: 99px; padding: 4px 12px;
+      font-size: .65rem; font-weight: 700; letter-spacing: .08em;
+      white-space: nowrap;
+    }
+
+    /* ══ Chart ══ */
+    .chart-top {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 14px;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .chart-top .card-label { margin-bottom: 0; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .leg {
+      display: flex; align-items: center; gap: 7px;
+      font-size: .68rem; color: var(--charcoal-2); font-weight: 600;
+      letter-spacing: .04em; text-transform: uppercase;
+    }
+    .leg-line {
+      width: 22px; height: 3px; border-radius: 99px;
+    }
+    .leg-line.std {
+      background: repeating-linear-gradient(
+        90deg, var(--charcoal-3) 0, var(--charcoal-3) 5px,
+        transparent 5px, transparent 9px
+      );
+    }
+    .leg-line.extra { background: var(--green); }
+    #leg-extra-item { display: none; }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 280px;
+    }
+    @media (max-width: 600px) { .chart-container { height: 220px; } }
+
+    #chart {
+      width: 100%; height: 100%; display: block; border-radius: 6px;
+    }
+
+    /* Crosshair overlay */
+    .ch-line {
+      position: absolute; top: 0; bottom: 0; width: 1px;
+      background: rgba(67,68,68,.2); pointer-events: none;
+      display: none;
+    }
+    .chart-tip {
+      position: absolute;
+      background: var(--charcoal);
+      color: #fff; border-radius: 9px;
+      padding: 10px 14px;
+      font-size: .72rem; pointer-events: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,.22);
+      transform: translate(-50%, -110%);
+      display: none; z-index: 10; min-width: 170px;
+      white-space: nowrap;
+    }
+    .chart-tip::after {
+      content: ''; position: absolute;
+      bottom: -5px; left: 50%; transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--charcoal); border-bottom: none;
+      border-left-width: 5px; border-right-width: 5px;
+    }
+    .tip-date {
+      font-size: .6rem; letter-spacing: .08em; text-transform: uppercase;
+      color: rgba(255,255,255,.5); margin-bottom: 7px;
+    }
+    .tip-row {
+      display: flex; justify-content: space-between; gap: 18px; margin-top: 3px;
+    }
+    .tip-lbl { color: rgba(255,255,255,.6); }
+    .tip-val { font-weight: 700; }
+    .tip-green { color: #7dd98a; }
+
+    /* ══ Bar ══ */
+    .bar-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
+    }
+    .bar-head .card-label { margin-bottom: 0; }
+    .bar-legend { display: flex; gap: 14px; }
+    .bleg { display: flex; align-items: center; gap: 6px; font-size: .68rem; color: var(--charcoal-2); }
+    .bleg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    .bar-track {
+      height: 14px; background: var(--border);
+      border-radius: 99px; overflow: hidden; display: flex;
+    }
+    .bar-seg-p { background: var(--green);    height: 100%; transition: width .5s; }
+    .bar-seg-i { background: var(--charcoal); height: 100%; transition: width .5s; }
+    .bar-note {
+      display: flex; justify-content: space-between;
+      margin-top: 8px; font-size: .7rem; color: var(--charcoal-3);
+      flex-wrap: wrap; gap: 4px;
+    }
+
+    /* ══ Table ══ */
+    .tbl-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+    }
+    .tbl-head .card-label { margin-bottom: 0; }
+    .tbl-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+    .tog { display: flex; border: 1.5px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+    .tog button {
+      padding: 6px 13px; border: none; background: transparent;
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: .62rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--charcoal-3); cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .tog button.on { background: var(--green); color: #fff; }
+    .tog button.tog-off { opacity: .35; cursor: not-allowed; }
+
+    .icon-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 13px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: .62rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--charcoal-3); cursor: pointer;
+      transition: border-color .15s, color .15s, background .15s;
+    }
+    .icon-btn:hover { border-color: var(--green); color: var(--green); background: var(--green-xlt); }
+    .icon-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    .tbl-scroll { overflow-x: auto; }
+    table.amort {
+      width: 100%; border-collapse: collapse;
+      font-size: .82rem; min-width: 540px;
+    }
+    .amort th, .amort td {
+      padding: 9px 14px; text-align: right;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    .amort th:first-child, .amort td:first-child { text-align: left; }
+    .amort thead th {
+      font-size: .62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--charcoal-3);
+      background: var(--bg); position: sticky; top: 0;
+    }
+    .amort tbody tr:hover td { background: var(--green-xlt); }
+    .amort .yr-sep td {
+      background: #f5f7f5; font-size: .62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em;
+      color: var(--charcoal-3); padding: 6px 14px;
+    }
+    .amort .fin td { background: var(--green-lt); font-weight: 700; }
+    .amort tr:last-child td { border-bottom: none; }
+    td.cp { color: var(--green); font-weight: 600; }
+    td.ci { color: var(--charcoal-2); }
+
+    /* ══ Footer ══ */
+    footer {
+      text-align: center; padding: 28px 16px;
+      font-size: .68rem; color: var(--charcoal-3);
+      letter-spacing: .06em;
+    }
+    footer a { color: var(--green); text-decoration: none; }
+
+    /* ══ Balance chart view toggle ══ */
+    .chart-controls {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+    }
+    .chart-controls .card-label { margin-bottom: 0; }
+    .chart-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+    /* ══ Rate comparison ══ */
+    .rate-canvas-wrap {
+      position: relative; width: 100%; height: 260px;
+    }
+    .rate-canvas-wrap canvas { width: 100%; height: 100%; display: block; }
+
+    .rate-tip {
+      position: absolute;
+      background: var(--charcoal); color: #fff;
+      border-radius: 9px; padding: 10px 14px;
+      font-size: .72rem; pointer-events: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,.22);
+      transform: translate(-50%, calc(-100% - 10px));
+      display: none; z-index: 10; min-width: 190px;
+      white-space: nowrap;
+    }
+    .rate-tip::after {
+      content: ''; position: absolute;
+      bottom: -5px; left: 50%; transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--charcoal); border-bottom: none;
+      border-left-width: 5px; border-right-width: 5px;
+    }
+    .rate-tip .tip-rate {
+      font-size: .62rem; letter-spacing: .08em; text-transform: uppercase;
+      color: rgba(255,255,255,.5); margin-bottom: 7px;
+    }
+    .rate-you { color: #7dd98a; font-size: .6rem; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase; }
+    .rate-diff-pos { color: #f87171; }
+    .rate-diff-neg { color: #7dd98a; }
+
+    /* ══ Summary card ══ */
+    .sum-slider-wrap { margin-bottom: 22px; }
+    .sum-slider-header {
+      display: flex; align-items: baseline;
+      justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;
+    }
+    .sum-slider-label {
+      font-size: .65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--charcoal-3);
+    }
+    .sum-slider-val {
+      font-size: 1.6rem; font-weight: 700;
+      letter-spacing: -.02em; color: var(--green);
+    }
+
+    .sum-sections { display: flex; flex-direction: column; }
+    .sum-section { padding: 20px 0; }
+    .sum-section:first-child { padding-top: 0; }
+    .sum-section + .sum-section { border-top: 1.5px solid var(--border); }
+
+    .sum-section-label {
+      font-size: .6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .14em; color: var(--charcoal-3); margin-bottom: 16px;
+    }
+    .sum-section-plan .sum-section-label { color: var(--green); }
+
+    .sum-row {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    @media (max-width: 520px) { .sum-row { grid-template-columns: 1fr 1fr; } }
+
+    .sum-stat-lbl {
+      font-size: .6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .1em; color: var(--charcoal-3); margin-bottom: 6px;
+    }
+    .sum-stat-val {
+      font-size: 1.3rem; font-weight: 700; letter-spacing: -.02em;
+      color: var(--charcoal); line-height: 1.1;
+    }
+    .sum-stat-val.green { color: var(--green); }
+    .sum-stat-sub {
+      font-size: .68rem; color: var(--charcoal-3); margin-top: 4px; font-weight: 400;
+    }
+    .sum-stat-sub.green { color: var(--green); font-weight: 600; }
+
+    /* ══ CTA card ══ */
+    .cta-card {
+      background: var(--green);
+      border-radius: var(--radius);
+      padding: 40px 32px;
+      margin-bottom: 20px;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+    }
+    .cta-card .cta-logo {
+      height: 64px; margin: 0 auto 20px; display: block;
+    }
+    .cta-card p {
+      color: rgba(255,255,255,.92);
+      font-size: .95rem; font-weight: 400; line-height: 1.65;
+      letter-spacing: .02em; max-width: 540px; margin: 0 auto 28px;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: #fff; color: var(--green);
+      padding: 14px 36px;
+      border-radius: var(--radius-sm);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: .8rem; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; text-decoration: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,.18);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.22); }
+
+    /* ══ Table expand ══ */
+    .tbl-expand-wrap {
+      text-align: center; padding: 14px 0 2px;
+      border-top: 1px solid var(--border); margin-top: 4px;
+    }
+    .tbl-expand-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 18px;
+      background: var(--green-xlt); border: 1.5px solid var(--green);
+      border-radius: var(--radius-sm);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: .62rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--green); cursor: pointer;
+      transition: background .15s, box-shadow .15s;
+    }
+    .tbl-expand-btn:hover { background: var(--green-lt); box-shadow: 0 2px 8px rgba(49,114,56,.15); }
+
+    /* ══ Print ══ */
+    @media print {
+      .site-header { box-shadow: none; }
+      .calc-btn, .tog, .icon-btn, .summary-card .sum-slider-wrap, .chart-card, .rate-card, .bar-card, .cta-card { display: none !important; }
+      .card { box-shadow: none; border: 1px solid #dce5dc; }
+      .results { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ Header ══ -->
+<header class="site-header">
+  <img src="logo.png" alt="Clear Cents Bookkeeping" class="site-logo">
+  <div class="header-right">
+    <strong>Loan Calculator</strong>
+    Making Clear Cents of your Business Books
+  </div>
+</header>
+
+<!-- ══ Page ══ -->
+<div class="wrap">
+
+  <div class="page-hero">
+    <h1>Loan Calculator</h1>
+    <p>MONTHLY PAYMENT · AMORTIZATION SCHEDULE · EARLY PAYOFF ANALYSIS</p>
+    <div class="green-bar"></div>
+  </div>
+
+  <!-- Inputs -->
+  <div class="card">
+    <p class="card-label">Loan Details</p>
+    <div class="input-grid">
+
+      <div class="field pl">
+        <label for="amount">Loan Amount</label>
+        <div class="input-wrap">
+          <span class="sym l">$</span>
+          <input id="amount" type="number" min="1" step="100" placeholder="250,000">
+        </div>
+      </div>
+
+      <div class="field pr">
+        <label for="rate">Annual Interest Rate</label>
+        <div class="input-wrap">
+          <input id="rate" type="number" min="0.01" max="50" step="0.01" placeholder="6.50">
+          <span class="sym r">%</span>
+        </div>
+      </div>
+
+      <div class="field pr">
+        <label for="term">Loan Term</label>
+        <div class="input-wrap">
+          <input id="term" type="number" min="1" max="50" step="1" placeholder="30">
+          <span class="sym r">yrs</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="start">First Payment Date</label>
+        <div class="input-wrap">
+          <input id="start" type="date">
+        </div>
+      </div>
+
+    </div>
+    <button class="calc-btn" onclick="calculate()">Calculate</button>
+  </div>
+
+  <!-- ══ Results ══ -->
+  <div class="results" id="results">
+
+    <!-- Summary -->
+    <div class="card summary-card">
+      <p class="card-label">Loan Summary</p>
+
+      <!-- Slider -->
+      <div class="sum-slider-wrap">
+        <div class="sum-slider-header">
+          <span class="sum-slider-label">Early Payoff — Adjust Monthly Payment</span>
+          <span class="sum-slider-val" id="sum-slider-display"></span>
+        </div>
+        <input type="range" id="extra-slider" min="0" max="2000" step="25" value="0" oninput="onSlider()">
+        <div class="slider-ends">
+          <span id="slider-min-lbl"></span>
+          <span id="slider-max"></span>
+        </div>
+      </div>
+
+      <!-- Two-row comparison -->
+      <div class="sum-sections">
+        <div class="sum-section">
+          <div class="sum-section-label">Original Schedule</div>
+          <div class="sum-row">
+            <div class="sum-stat">
+              <div class="sum-stat-lbl">Monthly Payment</div>
+              <div class="sum-stat-val" id="sum-orig-pmt"></div>
+            </div>
+            <div class="sum-stat">
+              <div class="sum-stat-lbl">Total Interest</div>
+              <div class="sum-stat-val" id="sum-orig-int"></div>
+            </div>
+            <div class="sum-stat">
+              <div class="sum-stat-lbl">Total Paid</div>
+              <div class="sum-stat-val" id="sum-orig-total"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sum-section sum-section-plan">
+          <div class="sum-section-label">Your Plan</div>
+          <div class="sum-row">
+            <div class="sum-stat">
+              <div class="sum-stat-lbl">Monthly Payment</div>
+              <div class="sum-stat-val green" id="sum-plan-pmt"></div>
+              <div class="sum-stat-sub" id="sum-plan-pmt-sub"></div>
+            </div>
+            <div class="sum-stat">
+              <div class="sum-stat-lbl">Payoff Time</div>
+              <div class="sum-stat-val" id="sum-plan-payoff"></div>
+              <div class="sum-stat-sub green" id="sum-plan-payoff-sub"></div>
+            </div>
+            <div class="sum-stat">
+              <div class="sum-stat-lbl">Total Interest</div>
+              <div class="sum-stat-val" id="sum-plan-int"></div>
+              <div class="sum-stat-sub green" id="sum-plan-int-sub"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-card">
+      <p>Need help recording your loans accurately? Want to pay down your debt faster? We can help!</p>
+      <a href="https://calendar.app.google/VLFZfaGbNs35tkzP8" target="_blank" rel="noopener" class="cta-btn">Book a Free Consultation</a>
+    </div>
+
+    <!-- Balance chart -->
+    <div class="card chart-card">
+      <div class="chart-controls">
+        <p class="card-label" id="chart-title">Principal Balance Over Time</p>
+        <div class="chart-right">
+          <div class="legend">
+            <span class="leg"><span class="leg-line std"></span>Standard</span>
+            <span class="leg" id="leg-extra-item"><span class="leg-line extra"></span><span id="leg-extra-lbl">With Extra</span></span>
+          </div>
+          <div class="tog">
+            <button id="cm-balance"    class="on" onclick="setChartMode('balance')">Balance</button>
+            <button id="cm-equity"     onclick="setChartMode('equity')">Equity</button>
+            <button id="cm-cumulative" onclick="setChartMode('cumulative')">Cumulative</button>
+          </div>
+        </div>
+      </div>
+      <div class="chart-container" id="chart-container">
+        <canvas id="chart"></canvas>
+        <div class="ch-line" id="ch-line"></div>
+        <div class="chart-tip" id="chart-tip"></div>
+      </div>
+    </div>
+
+    <!-- Rate comparison -->
+    <div class="card rate-card">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px">
+        <p class="card-label" style="margin-bottom:0">Rate Comparison — Total Interest Paid</p>
+        <span style="font-size:.7rem;color:var(--charcoal-3)">Your rate ±2% · Monthly payment shown above each bar</span>
+      </div>
+      <div class="rate-canvas-wrap" id="rate-wrap">
+        <canvas id="rate-chart"></canvas>
+        <div class="rate-tip" id="rate-tip"></div>
+      </div>
+    </div>
+
+    <!-- Principal/Interest bar -->
+    <div class="card bar-card">
+      <div class="bar-head">
+        <p class="card-label">Principal vs. Total Interest</p>
+        <div class="bar-legend">
+          <span class="bleg"><span class="bleg-dot" style="background:var(--green)"></span>Principal</span>
+          <span class="bleg"><span class="bleg-dot" style="background:var(--charcoal)"></span>Interest</span>
+        </div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-seg-p" id="bar-p"></div>
+        <div class="bar-seg-i" id="bar-i"></div>
+      </div>
+      <div class="bar-note">
+        <span id="bar-p-lbl"></span>
+        <span id="bar-i-lbl"></span>
+      </div>
+    </div>
+
+    <!-- Amortization table -->
+    <div class="card">
+      <div class="tbl-head">
+        <p class="card-label">Amortization Schedule</p>
+        <div class="tbl-actions">
+          <div class="tog">
+            <button id="btn-sched-base"  class="on"      onclick="setTableSched('base')">Base Loan</button>
+            <button id="btn-sched-extra" class="tog-off" onclick="setTableSched('extra')">With Extra</button>
+          </div>
+          <div class="tog">
+            <button id="btn-mo" class="on" onclick="setView('monthly')">Monthly</button>
+            <button id="btn-yr" onclick="setView('yearly')">Yearly</button>
+          </div>
+          <button class="icon-btn" onclick="downloadCSV()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download CSV
+          </button>
+          <button class="icon-btn" onclick="window.print()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            Print
+          </button>
+        </div>
+      </div>
+      <div class="tbl-scroll">
+        <table class="amort" id="amort-table"></table>
+      </div>
+      <div class="tbl-expand-wrap" style="display:none"></div>
+    </div>
+
+
+  </div><!-- /results -->
+</div><!-- /wrap -->
+
+<footer>
+  Clear Cents Bookkeeping · Making Clear Cents of your Business Books<br>
+  <span style="color:var(--charcoal-3)">This calculator is for illustrative purposes only and does not constitute financial advice.</span>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let state = {
+  principal: 0, monthlyRate: 0, n: 0,
+  monthlyPayment: 0, startDate: '',
+  termYears: 0, annualRate: 0,
+};
+let schedule     = [];   // standard amortization rows
+let extraSched   = [];   // with extra payment
+let extraPayment = 0;
+let currentView   = 'monthly';
+let chartMode     = 'balance';  // 'balance' | 'equity' | 'cumulative'
+let tableSchedule = 'base';     // 'base' | 'extra'
+let tableExpanded = false;
+
+/* ═══════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════ */
+function $(id) { return document.getElementById(id); }
+
+function money(n) {
+  return '$' + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function moneyRound(n) {
+  return '$' + Math.round(Math.abs(n)).toLocaleString('en-US');
+}
+function fmtK(n) {
+  if (n >= 1e6)  return '$' + (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + Math.round(n / 1000) + 'k';
+  return '$' + Math.round(n);
+}
+
+function addMonths(dateStr, n) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setMonth(d.getMonth() + n);
+  return d;
+}
+function fmtDate(d) {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function fmtMonthYear(d) {
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
+
+/* ═══════════════════════════════════════════════
+   AMORTIZATION BUILDER
+═══════════════════════════════════════════════ */
+function buildSchedule(principal, monthlyRate, basePayment, extra, startDate) {
+  const rows = [];
+  let balance = principal;
+  let i = 0;
+  while (balance > 0.005 && i < 1200) {
+    const interest  = balance * monthlyRate;
+    const payment   = Math.min(balance + interest, basePayment + extra);
+    const princ     = payment - interest;
+    balance        -= princ;
+    if (balance < 0) balance = 0;
+    rows.push({
+      num:      i + 1,
+      date:     addMonths(startDate, i),
+      payment,
+      principal: princ,
+      interest,
+      balance,
+    });
+    i++;
+  }
+  return rows;
+}
+
+/* ═══════════════════════════════════════════════
+   CALCULATE
+═══════════════════════════════════════════════ */
+function calculate() {
+  const principal = parseFloat($('amount').value);
+  const annualRate = parseFloat($('rate').value);
+  const termYears  = parseInt($('term').value);
+  const startDate  = $('start').value;
+
+  if (!principal || principal <= 0)   { err('amount'); return; }
+  if (!annualRate || annualRate <= 0) { err('rate');   return; }
+  if (!termYears  || termYears <= 0)  { err('term');   return; }
+  if (!startDate)                     { err('start');  return; }
+
+  const monthlyRate    = annualRate / 100 / 12;
+  const n              = termYears * 12;
+  const monthlyPayment = monthlyRate === 0
+    ? principal / n
+    : principal * (monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1);
+
+  state = { principal, monthlyRate, n, monthlyPayment, startDate, termYears, annualRate };
+
+  schedule = buildSchedule(principal, monthlyRate, monthlyPayment, 0, startDate);
+
+  const totalPaid     = schedule.reduce((s, r) => s + r.payment, 0);
+  const totalInterest = totalPaid - principal;
+  const payoffDate    = schedule[schedule.length - 1].date;
+
+  /* Summary — Original Schedule */
+  $('sum-orig-pmt').textContent   = money(monthlyPayment);
+  $('sum-orig-int').textContent   = moneyRound(totalInterest);
+  $('sum-orig-total').textContent = moneyRound(totalPaid);
+
+  /* Summary — Your Plan (initialise to same as original) */
+  $('sum-plan-pmt').textContent      = money(monthlyPayment);
+  $('sum-plan-pmt-sub').textContent  = 'Same as original';
+  $('sum-plan-payoff').textContent   = `${termYears} yr${termYears !== 1 ? 's' : ''}`;
+  $('sum-plan-payoff-sub').textContent = '';
+  $('sum-plan-int').textContent      = moneyRound(totalInterest);
+  $('sum-plan-int-sub').textContent  = '';
+
+  /* Bar */
+  const pPct = (principal / totalPaid * 100).toFixed(1);
+  const iPct = (totalInterest / totalPaid * 100).toFixed(1);
+  $('bar-p').style.width = pPct + '%';
+  $('bar-i').style.width = iPct + '%';
+  $('bar-p-lbl').textContent = `Principal ${moneyRound(principal)} (${pPct}%)`;
+  $('bar-i-lbl').textContent = `Interest ${moneyRound(totalInterest)} (${iPct}%)`;
+
+  /* Slider: extra payment, min=0, max=2× base payment snapped to $25 */
+  const sliderMax = Math.min(Math.ceil(monthlyPayment * 2 / 25) * 25, 10000);
+  const sl = $('extra-slider');
+  sl.min   = 0;
+  sl.max   = sliderMax;
+  sl.step  = 25;
+  sl.value = 0;
+  $('slider-min-lbl').textContent     = '$0 / mo extra';
+  $('slider-max').textContent         = moneyRound(sliderMax) + ' / mo extra';
+  $('sum-slider-display').textContent = '$0 / mo extra';
+  extraPayment  = 0;
+  extraSched    = [];
+  tableExpanded = false;
+  $('leg-extra-item').style.display = 'none';
+
+  renderTable();
+
+  const el = $('results');
+  el.className = 'results on';
+  // Draw canvases after two rAF ticks so the browser has completed layout
+  // on the newly-visible container (clientWidth/Height are 0 while display:none)
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    drawChart();
+    drawRateCharts();
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
+}
+
+/* ═══════════════════════════════════════════════
+   SLIDER
+═══════════════════════════════════════════════ */
+function onSlider() {
+  extraPayment = parseFloat($('extra-slider').value);
+
+  $('sum-slider-display').textContent = extraPayment > 0
+    ? '+' + money(extraPayment) + ' / mo extra'
+    : '$0 / mo extra';
+
+  if (extraPayment < 0.01) {
+    extraSched = [];
+    $('leg-extra-item').style.display = 'none';
+    tableSchedule = 'base';
+    $('btn-sched-base').classList.add('on');     $('btn-sched-base').classList.remove('tog-off');
+    $('btn-sched-extra').classList.remove('on'); $('btn-sched-extra').classList.add('tog-off');
+
+    /* Your Plan = same as original */
+    $('sum-plan-pmt').textContent      = money(state.monthlyPayment);
+    $('sum-plan-pmt-sub').textContent  = 'Same as original';
+    $('sum-plan-payoff').textContent   = `${state.termYears} yr${state.termYears !== 1 ? 's' : ''}`;
+    $('sum-plan-payoff-sub').textContent = '';
+    const origInt = schedule.reduce((s, r) => s + r.interest, 0);
+    $('sum-plan-int').textContent      = moneyRound(origInt);
+    $('sum-plan-int-sub').textContent  = '';
+  } else {
+    extraSched = buildSchedule(
+      state.principal, state.monthlyRate,
+      state.monthlyPayment, extraPayment, state.startDate
+    );
+
+    const stdInt    = schedule.reduce((s, r) => s + r.interest, 0);
+    const extInt    = extraSched.reduce((s, r) => s + r.interest, 0);
+    const savedInt  = stdInt - extInt;
+    const savedMos  = schedule.length - extraSched.length;
+    const savedYrs  = Math.floor(savedMos / 12);
+    const savedMoRem = savedMos % 12;
+
+    let sooner = '';
+    if (savedYrs > 0)   sooner += `${savedYrs} yr${savedYrs > 1 ? 's' : ''}`;
+    if (savedMoRem > 0) sooner += (sooner ? ' ' : '') + `${savedMoRem} mo`;
+
+    const planMos  = extraSched.length;
+    const planYrs  = Math.floor(planMos / 12);
+    const planMoRem = planMos % 12;
+    let planTime = `${planYrs} yr${planYrs !== 1 ? 's' : ''}`;
+    if (planMoRem > 0) planTime += ` ${planMoRem} mo`;
+
+    $('sum-plan-pmt').textContent      = money(state.monthlyPayment + extraPayment);
+    $('sum-plan-pmt-sub').textContent  = `+${money(extraPayment)} / mo extra`;
+    $('sum-plan-payoff').textContent   = planTime;
+    $('sum-plan-payoff-sub').textContent = sooner ? `${sooner} sooner` : '';
+    $('sum-plan-int').textContent      = moneyRound(extInt);
+    $('sum-plan-int-sub').textContent  = savedInt > 0 ? `Saves ${moneyRound(savedInt)}` : '';
+
+    $('leg-extra-item').style.display = 'flex';
+    $('leg-extra-lbl').textContent = `With ${money(extraPayment)}/mo extra`;
+    $('btn-sched-extra').classList.remove('tog-off');
+  }
+
+  drawChart();
+  renderTable();
+}
+
+/* ═══════════════════════════════════════════════
+   TABLE
+═══════════════════════════════════════════════ */
+function setView(v) {
+  currentView   = v;
+  tableExpanded = false;
+  $('btn-mo').classList.toggle('on', v === 'monthly');
+  $('btn-yr').classList.toggle('on', v === 'yearly');
+  renderTable();
+}
+
+function setTableSched(s) {
+  if (s === 'extra' && !extraSched.length) return;
+  tableExpanded = false;
+  tableSchedule = s;
+  $('btn-sched-base').classList.toggle('on',      s === 'base');
+  $('btn-sched-base').classList.toggle('tog-off', s !== 'base');
+  $('btn-sched-extra').classList.toggle('on',      s === 'extra');
+  $('btn-sched-extra').classList.toggle('tog-off', s !== 'extra');
+  renderTable();
+}
+
+function renderTable() {
+  const data = (tableSchedule === 'extra' && extraSched.length) ? extraSched : schedule;
+  const tbl  = $('amort-table');
+
+  const PREVIEW_MO = 12;
+  const PREVIEW_YR = 5;
+
+  const head = `<thead><tr>
+    <th>${currentView === 'yearly' ? 'Year' : '#'}</th>
+    <th>${currentView === 'yearly' ? 'Payments' : 'Date'}</th>
+    <th>Payment</th>
+    <th>Principal</th>
+    <th>Interest</th>
+    <th>Balance</th>
+  </tr></thead>`;
+
+  let body = '<tbody>';
+
+  if (currentView === 'monthly') {
+    const visible = tableExpanded ? data : data.slice(0, PREVIEW_MO);
+    visible.forEach((row, idx) => {
+      const isLast = tableExpanded && idx === data.length - 1;
+      const yr = row.date.getFullYear();
+      if (idx === 0 || visible[idx - 1].date.getFullYear() !== yr) {
+        body += `<tr class="yr-sep"><td colspan="6">${yr}</td></tr>`;
+      }
+      body += `<tr class="${isLast ? 'fin' : ''}">
+        <td>${row.num}</td>
+        <td>${fmtDate(row.date)}</td>
+        <td>${money(row.payment)}</td>
+        <td class="cp">${money(row.principal)}</td>
+        <td class="ci">${money(row.interest)}</td>
+        <td>${money(row.balance)}</td>
+      </tr>`;
+    });
+  } else {
+    const byYear = {};
+    data.forEach(r => {
+      const yr = r.date.getFullYear();
+      if (!byYear[yr]) byYear[yr] = { payment: 0, principal: 0, interest: 0, balance: 0, count: 0 };
+      byYear[yr].payment   += r.payment;
+      byYear[yr].principal += r.principal;
+      byYear[yr].interest  += r.interest;
+      byYear[yr].balance    = r.balance;
+      byYear[yr].count++;
+    });
+    const years = Object.keys(byYear).sort();
+    const visibleYrs = tableExpanded ? years : years.slice(0, PREVIEW_YR);
+    visibleYrs.forEach((yr, idx) => {
+      const r = byYear[yr];
+      const isLast = tableExpanded && idx === years.length - 1;
+      body += `<tr class="${isLast ? 'fin' : ''}">
+        <td>${yr}</td>
+        <td>${r.count} payment${r.count !== 1 ? 's' : ''}</td>
+        <td>${money(r.payment)}</td>
+        <td class="cp">${money(r.principal)}</td>
+        <td class="ci">${money(r.interest)}</td>
+        <td>${money(r.balance)}</td>
+      </tr>`;
+    });
+  }
+
+  body += '</tbody>';
+  tbl.innerHTML = head + body;
+
+  /* Expand / collapse button */
+  const totalRows = currentView === 'monthly' ? data.length : Object.keys(
+    data.reduce((acc, r) => { acc[r.date.getFullYear()] = 1; return acc; }, {})
+  ).length;
+  const preview = currentView === 'monthly' ? PREVIEW_MO : PREVIEW_YR;
+  const wrap = tbl.parentElement.parentElement.querySelector('.tbl-expand-wrap');
+  if (totalRows > preview) {
+    const hidden = totalRows - preview;
+    wrap.innerHTML = tableExpanded
+      ? `<button class="tbl-expand-btn" onclick="toggleTableExpand()">▲ Collapse</button>`
+      : `<button class="tbl-expand-btn" onclick="toggleTableExpand()">▼ Show all ${totalRows} ${currentView === 'monthly' ? 'payments' : 'years'} (${hidden} more)</button>`;
+    wrap.style.display = 'block';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function toggleTableExpand() {
+  tableExpanded = !tableExpanded;
+  renderTable();
+}
+
+/* ═══════════════════════════════════════════════
+   BALANCE CHART — MODE TOGGLE
+═══════════════════════════════════════════════ */
+function setChartMode(mode) {
+  chartMode = mode;
+  ['balance','equity','cumulative'].forEach(m => {
+    $('cm-' + m).classList.toggle('on', m === mode);
+  });
+  const titles = {
+    balance:    'Principal Balance Over Time',
+    equity:     'Equity Built Over Time',
+    cumulative: 'Cumulative Payments — Principal vs. Interest',
+  };
+  $('chart-title').textContent = titles[mode];
+  drawChart();
+}
+
+/* ═══════════════════════════════════════════════
+   BALANCE CHART
+═══════════════════════════════════════════════ */
+const PAD = { top: 18, right: 24, bottom: 44, left: 72 };
+
+function drawChart() {
+  const canvas    = $('chart');
+  const container = $('chart-container');
+  const dpr = window.devicePixelRatio || 1;
+  const W   = container.clientWidth;
+  const H   = container.clientHeight;
+
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  if (!schedule.length) return;
+
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top  - PAD.bottom;
+  const n  = schedule.length;
+
+  /* Build data series for each mode */
+  let stdSeries, extSeries, maxY, minY = 0;
+
+  if (chartMode === 'balance') {
+    stdSeries = schedule.map(r => r.balance);
+    extSeries = extraSched.map(r => r.balance);
+    maxY = state.principal;
+
+  } else if (chartMode === 'equity') {
+    stdSeries = schedule.map(r => state.principal - r.balance);
+    extSeries = extraSched.map(r => state.principal - r.balance);
+    maxY = state.principal;
+
+  } else { /* cumulative */
+    let cumP = 0, cumI = 0;
+    stdSeries = schedule.map(r => { cumP += r.principal; cumI += r.interest; return { p: cumP, i: cumI }; });
+    let cumPx = 0, cumIx = 0;
+    extSeries = extraSched.map(r => { cumPx += r.principal; cumIx += r.interest; return { p: cumPx, i: cumIx }; });
+    maxY = stdSeries[stdSeries.length - 1].p + stdSeries[stdSeries.length - 1].i;
+  }
+
+  function xPos(idx) { return PAD.left + (idx / (n - 1)) * cW; }
+  function yPos(val) { return PAD.top  + cH - (val / maxY) * cH; }
+
+  /* ── Y grid ── */
+  ctx.font = `400 11px 'Josefin Sans', sans-serif`;
+  for (let i = 0; i <= 5; i++) {
+    const y   = PAD.top + (i / 5) * cH;
+    const val = maxY * (1 - i / 5);
+    ctx.strokeStyle = '#e8ede8'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+    ctx.fillStyle = '#9a9b9b'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(fmtK(val), PAD.left - 8, y);
+  }
+
+  /* ── X year labels ── */
+  const termYears = state.termYears;
+  const xStep = termYears <= 10 ? 1 : termYears <= 20 ? 2 : 5;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let yr = 0; yr <= termYears; yr += xStep) {
+    const mo = yr * 12; if (mo >= n) break;
+    const x = xPos(mo);
+    ctx.strokeStyle = '#e8ede8'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, PAD.top); ctx.lineTo(x, PAD.top + cH); ctx.stroke();
+    ctx.fillStyle = '#9a9b9b';
+    ctx.fillText(`Yr ${yr}`, x, PAD.top + cH + 6);
+  }
+
+  /* ── Draw helpers ── */
+  function polyline(series, getValue, color, dashed, lw) {
+    ctx.beginPath();
+    ctx.setLineDash(dashed ? [6, 5] : []);
+    ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.lineJoin = 'round';
+    series.forEach((d, i) => {
+      const x = xPos(i), y = yPos(getValue(d));
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  function fillUnder(series, getValue, color) {
+    const len = series.length;
+    ctx.beginPath();
+    series.forEach((d, i) => {
+      const x = xPos(i), y = yPos(getValue(d));
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.lineTo(xPos(len - 1), PAD.top + cH);
+    ctx.lineTo(PAD.left,      PAD.top + cH);
+    ctx.closePath(); ctx.fillStyle = color; ctx.fill();
+  }
+
+  /* ── Mode-specific drawing ── */
+  if (chartMode === 'cumulative') {
+    /* Stacked area: principal (green) + interest (charcoal) for standard schedule */
+    ctx.beginPath();
+    stdSeries.forEach((d, i) => { const x = xPos(i), y = yPos(d.p + d.i); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.lineTo(xPos(n - 1), PAD.top + cH); ctx.lineTo(PAD.left, PAD.top + cH);
+    ctx.closePath(); ctx.fillStyle = 'rgba(99,100,100,0.10)'; ctx.fill();
+
+    ctx.beginPath();
+    stdSeries.forEach((d, i) => { const x = xPos(i), y = yPos(d.p); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.lineTo(xPos(n - 1), PAD.top + cH); ctx.lineTo(PAD.left, PAD.top + cH);
+    ctx.closePath(); ctx.fillStyle = 'rgba(49,114,56,0.12)'; ctx.fill();
+
+    if (extSeries.length > 0) {
+      /* Extra payment: dashed standard total, solid green extra total */
+      polyline(stdSeries, d => d.p + d.i, '#9a9b9b', true, 1.8);
+      polyline(extSeries, d => d.p + d.i, '#317238', false, 2.5);
+    } else {
+      /* No extra payment: solid lines for both series */
+      polyline(stdSeries, d => d.p + d.i, '#636464', false, 2);
+      polyline(stdSeries, d => d.p,       '#317238', false, 2.5);
+    }
+
+    /* Crossover marker */
+    const crossIdx = stdSeries.findIndex(d => d.p >= d.i);
+    if (crossIdx > 0) {
+      const cx = xPos(crossIdx);
+      ctx.strokeStyle = '#317238'; ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(cx, PAD.top); ctx.lineTo(cx, PAD.top + cH); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#317238'; ctx.font = `700 10px 'Josefin Sans', sans-serif`;
+      ctx.textAlign = cx < W / 2 ? 'left' : 'right'; ctx.textBaseline = 'top';
+      ctx.fillText('Crossover', cx < W / 2 ? cx + 5 : cx - 5, PAD.top + 4);
+    }
+
+  } else if (extSeries.length > 0) {
+    /* Two-curve mode with savings shading */
+    const extLen = extSeries.length;
+    ctx.beginPath();
+    extSeries.forEach((d, i) => { const x = xPos(i), y = yPos(d); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.lineTo(xPos(extLen - 1), PAD.top + cH);
+    ctx.lineTo(xPos(n - 1),     PAD.top + cH);
+    for (let i = n - 1; i >= 0; i--) ctx.lineTo(xPos(i), yPos(stdSeries[i]));
+    ctx.closePath(); ctx.fillStyle = 'rgba(49,114,56,0.10)'; ctx.fill();
+
+    polyline(stdSeries, d => d, '#9a9b9b', true, 1.8);
+    polyline(extSeries, d => d, '#317238', false, 2.5);
+
+  } else {
+    /* Single curve */
+    fillUnder(stdSeries, d => d, 'rgba(49,114,56,0.07)');
+    polyline(stdSeries, d => d, '#317238', false, 2.5);
+  }
+
+  /* ── Axis borders ── */
+  ctx.strokeStyle = '#dce5dc'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + cH); ctx.lineTo(PAD.left + cW, PAD.top + cH);
+  ctx.stroke();
+}
+
+/* ── Balance chart tooltip ── */
+(function attachChartEvents() {
+  const container = $('chart-container');
+  const chLine    = $('ch-line');
+  const tip       = $('chart-tip');
+
+  function handleMove(clientX) {
+    const rect   = container.getBoundingClientRect();
+    const mouseX = clientX - rect.left;
+    const cW     = rect.width - PAD.left - PAD.right;
+    const chartX = mouseX - PAD.left;
+
+    if (!schedule.length || chartX < 0 || chartX > cW) {
+      chLine.style.display = tip.style.display = 'none'; return;
+    }
+
+    const idx    = Math.max(0, Math.min(schedule.length - 1, Math.round(chartX / cW * (schedule.length - 1))));
+    const stdRow = schedule[idx];
+    const extRow = extraSched.length > idx ? extraSched[idx] : null;
+    const cH     = rect.height - PAD.top - PAD.bottom;
+
+    chLine.style.cssText = `display:block;left:${mouseX}px;top:${PAD.top}px;height:${cH}px`;
+
+    const tipX = Math.min(Math.max(mouseX, 95), rect.width - 95);
+    tip.style.cssText = `display:block;left:${tipX}px;top:${PAD.top + cH * 0.18}px`;
+
+    /* Build tip content based on mode */
+    let rows = '';
+    if (chartMode === 'balance') {
+      rows = `<div class="tip-row"><span class="tip-lbl">Balance</span><span class="tip-val">${money(stdRow.balance)}</span></div>`;
+      if (extRow) rows += `<div class="tip-row"><span class="tip-lbl tip-green">With Extra</span><span class="tip-val tip-green">${money(extRow.balance)}</span></div>`;
+      else if (extraSched.length) rows += `<div class="tip-row"><span class="tip-lbl tip-green">With Extra</span><span class="tip-val tip-green">Paid Off ✓</span></div>`;
+
+    } else if (chartMode === 'equity') {
+      const eq = state.principal - stdRow.balance;
+      rows = `<div class="tip-row"><span class="tip-lbl">Equity Built</span><span class="tip-val">${money(eq)}</span></div>`;
+      if (extRow) {
+        const eqx = state.principal - extRow.balance;
+        rows += `<div class="tip-row"><span class="tip-lbl tip-green">With Extra</span><span class="tip-val tip-green">${money(eqx)}</span></div>`;
+      }
+
+    } else { /* cumulative */
+      let cumP = 0, cumI = 0;
+      for (let i = 0; i <= idx; i++) { cumP += schedule[i].principal; cumI += schedule[i].interest; }
+      rows = `
+        <div class="tip-row"><span class="tip-lbl" style="color:#7dd98a">Principal Paid</span><span class="tip-val">${money(cumP)}</span></div>
+        <div class="tip-row"><span class="tip-lbl" style="color:#c0c1c1">Interest Paid</span><span class="tip-val">${money(cumI)}</span></div>
+        <div class="tip-row" style="margin-top:5px;border-top:1px solid rgba(255,255,255,.15);padding-top:5px">
+          <span class="tip-lbl">Total Paid</span><span class="tip-val">${money(cumP + cumI)}</span>
+        </div>`;
+    }
+
+    tip.innerHTML = `<div class="tip-date">${fmtMonthYear(stdRow.date)} · Payment ${stdRow.num}</div>${rows}`;
+  }
+
+  container.addEventListener('mousemove',  e => handleMove(e.clientX));
+  container.addEventListener('touchmove',  e => { e.preventDefault(); handleMove(e.touches[0].clientX); }, { passive: false });
+  container.addEventListener('mouseleave', () => { chLine.style.display = tip.style.display = 'none'; });
+})();
+
+/* ═══════════════════════════════════════════════
+   RATE COMPARISON CHART (single unified)
+═══════════════════════════════════════════════ */
+const RPAD = { top: 44, right: 20, bottom: 38, left: 76 };
+
+function getRatePoints() {
+  const base = state.annualRate;
+  const rates = [];
+  for (let i = -4; i <= 4; i++) {
+    const r = Math.round((base + i * 0.5) * 100) / 100;
+    if (r > 0) rates.push(r);
+  }
+  return rates;
+}
+
+function calcLoanMetrics(annualRate) {
+  const r   = annualRate / 100 / 12;
+  const n   = state.termYears * 12;
+  const P   = state.principal;
+  const pmt = r === 0 ? P / n : P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  return { pmt, totalInt: pmt * n - P };
+}
+
+function fillBar(ctx, x, y, w, h) {
+  /* Rounded top corners, compatible with all modern browsers */
+  const r = Math.min(3, w / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawRateCharts() {
+  if (!schedule.length) return;
+  const wrap    = $('rate-wrap');
+  const canvas  = $('rate-chart');
+  const dpr     = window.devicePixelRatio || 1;
+  const W       = wrap.clientWidth;
+  const H       = wrap.clientHeight;
+
+  canvas.width  = W * dpr;  canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const rates   = getRatePoints();
+  const metrics = rates.map(r => ({ rate: r, ...calcLoanMetrics(r) }));
+  const n       = rates.length;
+  const cW      = W - RPAD.left - RPAD.right;
+  const cH      = H - RPAD.top  - RPAD.bottom;
+  const slot    = cW / n;
+  const barW    = Math.max(12, slot * 0.58);
+
+  const maxInt  = Math.max(...metrics.map(m => m.totalInt)) * 1.15;
+
+  function xMid(i) { return RPAD.left + slot * i + slot / 2; }
+  function yVal(v) { return RPAD.top  + cH - (v / maxInt) * cH; }
+
+  /* Y grid */
+  ctx.font = `400 10.5px 'Josefin Sans', sans-serif`;
+  for (let i = 0; i <= 4; i++) {
+    const y   = RPAD.top + (i / 4) * cH;
+    const val = maxInt * (1 - i / 4);
+    ctx.strokeStyle = '#e8ede8'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(RPAD.left, y); ctx.lineTo(RPAD.left + cW, y); ctx.stroke();
+    ctx.fillStyle = '#9a9b9b'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(fmtK(val), RPAD.left - 8, y);
+  }
+
+  /* Bars + labels */
+  metrics.forEach((m, i) => {
+    const isCurrent = Math.abs(m.rate - state.annualRate) < 0.001;
+    const isAbove   = m.rate > state.annualRate;
+    const dist      = Math.abs(m.rate - state.annualRate) / 2; // 0–1
+
+    const x   = xMid(i) - barW / 2;
+    const y   = yVal(m.totalInt);
+    const bH  = RPAD.top + cH - y;
+
+    /* Bar fill colour */
+    if (isCurrent)       ctx.fillStyle = '#317238';
+    else if (isAbove)    ctx.fillStyle = `rgba(185,58,58,${0.18 + dist * 0.55})`;
+    else                 ctx.fillStyle = `rgba(49,114,56,${0.22 + (1 - dist) * 0.35})`;
+
+    fillBar(ctx, x, y, barW, bH);
+
+    /* Monthly payment label above bar */
+    ctx.font = isCurrent
+      ? `700 10px 'Josefin Sans', sans-serif`
+      : `400 9.5px 'Josefin Sans', sans-serif`;
+    ctx.fillStyle    = isCurrent ? '#317238' : '#9a9b9b';
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(money(m.pmt).replace('.00',''), xMid(i), y - 4);
+
+    /* "YOUR RATE" pin */
+    if (isCurrent) {
+      ctx.font      = `700 8.5px 'Josefin Sans', sans-serif`;
+      ctx.fillStyle = '#317238';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('YOUR RATE', xMid(i), y - 16);
+      /* small tick */
+      ctx.strokeStyle = '#317238'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(xMid(i), y - 2); ctx.lineTo(xMid(i), y); ctx.stroke();
+    }
+
+    /* X-axis rate label */
+    ctx.font      = isCurrent ? `700 10px 'Josefin Sans', sans-serif` : `400 10px 'Josefin Sans', sans-serif`;
+    ctx.fillStyle = isCurrent ? '#317238' : '#9a9b9b';
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(m.rate.toFixed(1) + '%', xMid(i), RPAD.top + cH + 6);
+  });
+
+  /* Axis */
+  ctx.strokeStyle = '#dce5dc'; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(RPAD.left, RPAD.top);
+  ctx.lineTo(RPAD.left, RPAD.top + cH);
+  ctx.lineTo(RPAD.left + cW, RPAD.top + cH);
+  ctx.stroke();
+}
+
+/* ── Rate chart tooltip ── */
+(function attachRateEvents() {
+  const wrap = $('rate-wrap');
+  const tip  = $('rate-tip');
+
+  function handleMove(clientX) {
+    if (!schedule.length) { tip.style.display = 'none'; return; }
+    const rect   = wrap.getBoundingClientRect();
+    const mouseX = clientX - rect.left;
+    const rates  = getRatePoints();
+    const slot   = (rect.width - RPAD.left - RPAD.right) / rates.length;
+    const barI   = Math.floor((mouseX - RPAD.left) / slot);
+
+    if (barI < 0 || barI >= rates.length) { tip.style.display = 'none'; return; }
+
+    const m         = calcLoanMetrics(rates[barI]);
+    const baseM     = calcLoanMetrics(state.annualRate);
+    const isCurrent = Math.abs(rates[barI] - state.annualRate) < 0.001;
+    const pmtDiff   = m.pmt      - baseM.pmt;
+    const intDiff   = m.totalInt - baseM.totalInt;
+
+    const tipX = Math.min(Math.max(RPAD.left + slot * barI + slot / 2, 100), rect.width - 100);
+    tip.style.cssText = `display:block;left:${tipX}px;top:${RPAD.top + 4}px`;
+
+    const diffPmt = isCurrent ? '' :
+      `<div class="tip-row"><span class="tip-lbl">vs. Yours/mo</span>
+       <span class="tip-val ${pmtDiff > 0 ? 'rate-diff-pos' : 'rate-diff-neg'}">${pmtDiff > 0 ? '+' : ''}${money(pmtDiff)}</span></div>`;
+    const diffInt = isCurrent ? '' :
+      `<div class="tip-row"><span class="tip-lbl">vs. Yours total</span>
+       <span class="tip-val ${intDiff > 0 ? 'rate-diff-pos' : 'rate-diff-neg'}">${intDiff > 0 ? '+' : ''}${moneyRound(intDiff)}</span></div>`;
+
+    tip.innerHTML = `
+      <div class="tip-rate">${rates[barI].toFixed(2)}%${isCurrent ? ' <span class="rate-you">YOUR RATE</span>' : ''}</div>
+      <div class="tip-row"><span class="tip-lbl">Monthly</span><span class="tip-val">${money(m.pmt)}</span></div>
+      ${diffPmt}
+      <div class="tip-row" style="margin-top:4px"><span class="tip-lbl">Total Interest</span><span class="tip-val">${moneyRound(m.totalInt)}</span></div>
+      ${diffInt}`;
+  }
+
+  wrap.addEventListener('mousemove',  e => handleMove(e.clientX));
+  wrap.addEventListener('touchmove',  e => { e.preventDefault(); handleMove(e.touches[0].clientX); }, { passive: false });
+  wrap.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+})();
+
+/* ═══════════════════════════════════════════════
+   CSV DOWNLOAD
+═══════════════════════════════════════════════ */
+function downloadCSV() {
+  const data = extraPayment > 0 ? extraSched : schedule;
+  if (!data.length) return;
+
+  const label = extraPayment > 0
+    ? `Amortization with $${Math.round(extraPayment).toLocaleString()} extra/mo`
+    : 'Amortization Schedule';
+
+  const header = `"${label}"\n"Generated by Clear Cents Bookkeeping Loan Calculator"\n\n`;
+  const cols   = '"Payment #","Date","Payment","Principal","Interest","Balance"\n';
+  const rows   = data.map(r =>
+    `${r.num},"${fmtDate(r.date)}","${money(r.payment)}","${money(r.principal)}","${money(r.interest)}","${money(r.balance)}"`
+  ).join('\n');
+
+  const totPmt  = data.reduce((s, r) => s + r.payment,   0);
+  const totPrnc = data.reduce((s, r) => s + r.principal, 0);
+  const totInt  = data.reduce((s, r) => s + r.interest,  0);
+  const totals  = `\n"TOTALS","","${money(totPmt)}","${money(totPrnc)}","${money(totInt)}","$0.00"`;
+
+  const csv  = header + cols + rows + totals;
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `loan-amortization${extraPayment > 0 ? '-early-payoff' : ''}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+/* ═══════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════ */
+function err(id) {
+  const el = $(id);
+  el.classList.add('shake'); el.focus();
+  setTimeout(() => el.classList.remove('shake'), 1800);
+}
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (schedule.length) { drawChart(); drawRateCharts(); }
+  }, 120);
+});
+
+(function () {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 1); d.setDate(1);
+  $('start').value = d.toISOString().split('T')[0];
+})();
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !$('results').classList.contains('on')) calculate();
+});
+</script>
+</body>
+</html>
