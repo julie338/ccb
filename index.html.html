@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cash Flow Calculator — Clear Cents Bookkeeping</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green:     #317238;
+      --green-dk:  #255a2c;
+      --green-lt:  #edf6ee;
+      --green-xlt: #f5fbf5;
+      --charcoal:  #434444;
+      --charcoal-2:#636464;
+      --charcoal-3:#9a9b9b;
+      --bg:        #f0f3f0;
+      --surface:   #ffffff;
+      --border:    #dce5dc;
+      --shadow:    0 2px 8px rgba(49,114,56,.07), 0 1px 3px rgba(0,0,0,.05);
+      --shadow-lg: 0 6px 24px rgba(49,114,56,.10), 0 2px 6px rgba(0,0,0,.05);
+      --radius:    14px;
+      --radius-sm: 9px;
+      --red:       #dc2626;
+      --red-lt:    #fef2f2;
+      --amber:     #d97706;
+      --amber-lt:  #fffbeb;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Josefin Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--charcoal);
+      min-height: 100vh;
+    }
+
+    /* ══ Header ══ */
+    .site-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .site-logo { height: 96px; width: auto; display: block; }
+    .header-right {
+      font-size: .72rem; color: var(--charcoal-3);
+      text-align: right; letter-spacing: .04em; line-height: 1.5;
+    }
+    .header-right strong { color: var(--green); font-weight: 700; display: block; }
+    @media (max-width: 600px) {
+      .site-header { padding: 12px 16px; }
+      .site-logo { height: 72px; }
+      .header-right { display: none; }
+    }
+
+    /* ══ Page ══ */
+    .wrap { max-width: 980px; margin: 0 auto; padding: 32px 16px 72px; }
+    .page-hero { text-align: center; margin-bottom: 28px; }
+    .page-hero h1 {
+      font-size: clamp(1.5rem, 4vw, 2.1rem);
+      font-weight: 700; letter-spacing: .02em; color: var(--charcoal);
+    }
+    .page-hero p {
+      font-size: .85rem; color: var(--charcoal-3);
+      margin-top: 6px; letter-spacing: .06em; font-weight: 400;
+    }
+    .green-bar {
+      width: 48px; height: 3px; background: var(--green);
+      border-radius: 99px; margin: 14px auto 0;
+    }
+
+    /* ══ Card ══ */
+    .card {
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 26px 28px; margin-bottom: 20px;
+    }
+    @media (max-width: 540px) { .card { padding: 20px 16px; } }
+    .card-label {
+      font-size: .65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--charcoal-3); margin-bottom: 18px;
+    }
+
+    /* ══ Inputs ══ */
+    .input-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    }
+    @media (max-width: 520px) { .input-grid { grid-template-columns: 1fr; } }
+
+    .field label {
+      display: block; font-size: .65rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em;
+      color: var(--charcoal-2); margin-bottom: 4px;
+    }
+    .field-hint {
+      font-size: .67rem; color: var(--charcoal-3);
+      margin-bottom: 7px; font-weight: 400; line-height: 1.4;
+    }
+    .input-wrap { position: relative; }
+    .sym {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      font-size: .9rem; font-weight: 600; color: var(--charcoal-3);
+      pointer-events: none; user-select: none;
+    }
+    .sym.l { left: 12px; }
+    .sym.r { right: 12px; }
+    .field input {
+      width: 100%; font-family: 'Josefin Sans', sans-serif;
+      padding: 12px; border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); font-size: .97rem;
+      color: var(--charcoal); outline: none;
+      transition: border-color .15s, box-shadow .15s;
+      -moz-appearance: textfield;
+    }
+    .field input::-webkit-outer-spin-button,
+    .field input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .pl input { padding-left: 28px; }
+    .pr input { padding-right: 44px; }
+    .field input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(49,114,56,.14);
+    }
+    .field input::placeholder { color: #cad4ca; }
+    .field input.shake {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(220,38,38,.12);
+      animation: shake .4s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-5px); }
+      75%      { transform: translateX(5px); }
+    }
+
+    /* ══ Section divider ══ */
+    .section-divider {
+      display: flex; align-items: center; gap: 14px;
+      margin: 26px 0 22px;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .section-divider span {
+      font-size: .6rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .14em; color: var(--charcoal-3); white-space: nowrap;
+    }
+
+    /* ══ Nudge banner ══ */
+    .nudge-banner {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--green-lt); border: 1px solid rgba(49,114,56,.18);
+      border-radius: var(--radius-sm); padding: 12px 16px;
+      margin-top: 22px;
+      font-size: .75rem; color: var(--green-dk); line-height: 1.4;
+    }
+    .nudge-banner span:first-child { font-size: 1.1rem; flex-shrink: 0; }
+
+    /* ══ Button ══ */
+    .calc-btn {
+      display: block; width: 100%; margin-top: 18px; padding: 14px;
+      background: var(--green); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: .85rem; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+      cursor: pointer;
+      transition: background .15s, transform .1s, box-shadow .15s;
+      box-shadow: 0 2px 8px rgba(49,114,56,.3);
+    }
+    .calc-btn:hover  { background: var(--green-dk); box-shadow: 0 4px 14px rgba(49,114,56,.35); }
+    .calc-btn:active { transform: scale(.99); }
+
+    /* ══ Results ══ */
+    .results { display: none; }
+    .results.on { display: block; }
+
+    /* ══ Stats grid ══ */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 16px; margin-bottom: 20px;
+    }
+    @media (max-width: 700px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 360px) { .stats-grid { grid-template-columns: 1fr; } }
+
+    .stat {
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 20px;
+      border-top: 4px solid var(--border);
+    }
+    .stat.g  { border-top-color: var(--green); }
+    .stat.a  { border-top-color: var(--amber); }
+    .stat.r  { border-top-color: var(--red); }
+    .stat .slbl {
+      font-size: .62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--charcoal-3); margin-bottom: 8px;
+    }
+    .stat .sval {
+      font-size: 1.4rem; font-weight: 700; letter-spacing: -.02em;
+      line-height: 1.1; color: var(--charcoal);
+    }
+    .stat.g .sval { color: var(--green); }
+    .stat.a .sval { color: var(--amber); }
+    .stat.r .sval { color: var(--red); }
+    .stat .ssub {
+      font-size: .7rem; color: var(--charcoal-3); margin-top: 5px; font-weight: 400;
+    }
+
+    /* ══ Chart ══ */
+    .chart-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+    }
+    .chart-header .card-label { margin-bottom: 0; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .leg {
+      display: flex; align-items: center; gap: 7px;
+      font-size: .68rem; color: var(--charcoal-2); font-weight: 600;
+      letter-spacing: .04em; text-transform: uppercase;
+    }
+    .leg-line { width: 22px; height: 3px; border-radius: 99px; }
+    .leg-line.best   { background: var(--green); }
+    .leg-line.likely { background: var(--amber); }
+    .leg-line.worst  {
+      background: repeating-linear-gradient(
+        90deg, var(--red) 0, var(--red) 5px, transparent 5px, transparent 9px
+      );
+    }
+
+    .chart-container {
+      position: relative; width: 100%; height: 300px;
+    }
+    @media (max-width: 600px) { .chart-container { height: 220px; } }
+    #cf-chart { width: 100%; height: 100%; display: block; border-radius: 6px; }
+
+    .chart-tip {
+      position: absolute;
+      background: var(--charcoal); color: #fff;
+      border-radius: 9px; padding: 10px 14px;
+      font-size: .72rem; pointer-events: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,.22);
+      transform: translate(-50%, calc(-100% - 10px));
+      display: none; z-index: 10; min-width: 180px; white-space: nowrap;
+    }
+    .chart-tip::after {
+      content: ''; position: absolute;
+      bottom: -5px; left: 50%; transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--charcoal); border-bottom: none;
+      border-left-width: 5px; border-right-width: 5px;
+    }
+    .tip-month {
+      font-size: .6rem; letter-spacing: .08em; text-transform: uppercase;
+      color: rgba(255,255,255,.5); margin-bottom: 7px;
+    }
+    .tip-row {
+      display: flex; justify-content: space-between; gap: 18px; margin-top: 3px;
+    }
+    .tip-lbl { color: rgba(255,255,255,.6); }
+    .tip-val { font-weight: 700; }
+    .tip-green { color: #7dd98a; }
+    .tip-amber { color: #fbbf24; }
+    .tip-red   { color: #f87171; }
+
+    /* ══ Insights ══ */
+    .insight-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    .insight-item {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 14px 16px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .insight-item.good   { background: var(--green-xlt); border-color: rgba(49,114,56,.2); }
+    .insight-item.warn   { background: var(--amber-lt);  border-color: rgba(217,119,6,.2); }
+    .insight-item.danger { background: var(--red-lt);    border-color: rgba(220,38,38,.2); }
+    .insight-icon { font-size: 1.3rem; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+    .insight-body { flex: 1; }
+    .insight-body strong {
+      display: block; font-size: .85rem; font-weight: 700;
+      color: var(--charcoal); margin-bottom: 4px;
+    }
+    .insight-body p { font-size: .78rem; color: var(--charcoal-2); line-height: 1.55; }
+    .insight-nudge {
+      display: inline-block; margin-top: 8px;
+      font-size: .7rem; font-weight: 700; font-style: italic;
+      color: var(--green);
+    }
+    .insight-item.danger .insight-nudge { color: var(--red); }
+    .insight-item.warn   .insight-nudge { color: var(--amber); }
+
+    /* ══ CTA ══ */
+    .cta-card {
+      background: var(--green); border-radius: var(--radius);
+      padding: 40px 32px; margin-bottom: 20px;
+      text-align: center; box-shadow: var(--shadow-lg);
+    }
+    .cta-card p {
+      color: rgba(255,255,255,.92);
+      font-size: .95rem; font-weight: 400; line-height: 1.65;
+      letter-spacing: .02em; max-width: 540px; margin: 0 auto 28px;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: #fff; color: var(--green);
+      padding: 14px 36px; border-radius: var(--radius-sm);
+      font-family: 'Josefin Sans', sans-serif;
+      font-size: .8rem; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; text-decoration: none;
+      box-shadow: 0 2px 10px rgba(0,0,0,.18);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.22); }
+
+    /* ══ Footer ══ */
+    footer {
+      text-align: center; padding: 28px 16px;
+      font-size: .68rem; color: var(--charcoal-3); letter-spacing: .06em;
+    }
+
+    /* ══ Print ══ */
+    @media print {
+      .site-header { box-shadow: none; }
+      .calc-btn, .cta-card { display: none !important; }
+      .card { box-shadow: none; border: 1px solid #dce5dc; }
+      .results { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ Header ══ -->
+<header class="site-header">
+  <img src="logo.png" alt="Clear Cents Bookkeeping" class="site-logo">
+  <div class="header-right">
+    <strong>Cash Flow Calculator</strong>
+    Making Clear Cents of your Business Books
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="page-hero">
+    <h1>Cash Flow Calculator</h1>
+    <p>12-MONTH PROJECTION · SPOT THE GAPS · KNOW YOUR RUNWAY</p>
+    <div class="green-bar"></div>
+  </div>
+
+  <!-- Inputs -->
+  <div class="card">
+    <p class="card-label">Your Business Numbers</p>
+    <div class="input-grid">
+
+      <div class="field pl">
+        <label for="revenue">Average Monthly Revenue</label>
+        <div class="field-hint">What typically comes in each month? A rough estimate is fine.</div>
+        <div class="input-wrap">
+          <span class="sym l">$</span>
+          <input id="revenue" type="number" min="0" step="100" placeholder="25,000">
+        </div>
+      </div>
+
+      <div class="field pl">
+        <label for="expenses">Average Monthly Expenses</label>
+        <div class="field-hint">Rent, payroll, subcontractors, insurance, subscriptions, loan payments — everything going out.</div>
+        <div class="input-wrap">
+          <span class="sym l">$</span>
+          <input id="expenses" type="number" min="0" step="100" placeholder="20,000">
+        </div>
+      </div>
+
+      <div class="field pl">
+        <label for="cash">Cash on Hand Right Now</label>
+        <div class="field-hint">What's in your business checking account today?</div>
+        <div class="input-wrap">
+          <span class="sym l">$</span>
+          <input id="cash" type="number" min="0" step="100" placeholder="15,000">
+        </div>
+      </div>
+
+      <div class="field pr">
+        <label for="recv-days">Days Clients Take to Pay</label>
+        <div class="field-hint">Net 30? Net 60? If they pay on delivery, enter 0.</div>
+        <div class="input-wrap">
+          <input id="recv-days" type="number" min="0" max="120" step="1" placeholder="30">
+          <span class="sym r">days</span>
+        </div>
+      </div>
+
+      <div class="field pr">
+        <label for="pay-day">Day Your Bills Are Due</label>
+        <div class="field-hint">Day of the month most expenses hit — 1 = start, 15 = mid-month.</div>
+        <div class="input-wrap">
+          <input id="pay-day" type="number" min="1" max="31" step="1" placeholder="1">
+          <span class="sym r">day</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="section-divider"><span>The Full Picture</span></div>
+
+    <div class="input-grid">
+
+      <div class="field pl">
+        <label for="owner-pay">Monthly Owner Salary / Draw</label>
+        <div class="field-hint">What you pay yourself each month. Enter $0 if you don't — that's important information too.</div>
+        <div class="input-wrap">
+          <span class="sym l">$</span>
+          <input id="owner-pay" type="number" min="0" step="100" placeholder="0">
+        </div>
+      </div>
+
+      <div class="field pr">
+        <label for="tax-pct">% Set Aside for Taxes</label>
+        <div class="field-hint">Quarterly estimated taxes catch many business owners off guard. Recommended: 25–30% of net profit.</div>
+        <div class="input-wrap">
+          <input id="tax-pct" type="number" min="0" max="50" step="1" placeholder="0">
+          <span class="sym r">%</span>
+        </div>
+      </div>
+
+      <div class="field pl">
+        <label for="overdue">Overdue Client Invoices</label>
+        <div class="field-hint">Total amount clients currently owe you that's past due. Enter $0 if you collect upfront or have no outstanding invoices.</div>
+        <div class="input-wrap">
+          <span class="sym l">$</span>
+          <input id="overdue" type="number" min="0" step="100" placeholder="0">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="nudge-banner">
+      <span>💡</span>
+      <span>Not sure about some of these numbers? That uncertainty is exactly where we start with every client.</span>
+    </div>
+
+    <button class="calc-btn" onclick="calculate()">See My Cash Flow</button>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat" id="stat-net">
+        <div class="slbl">Monthly Net</div>
+        <div class="sval" id="s-net"></div>
+        <div class="ssub" id="s-net-sub"></div>
+      </div>
+      <div class="stat" id="stat-runway">
+        <div class="slbl">Cash Runway</div>
+        <div class="sval" id="s-runway"></div>
+        <div class="ssub" id="s-runway-sub"></div>
+      </div>
+      <div class="stat" id="stat-gap">
+        <div class="slbl">Timing Gap</div>
+        <div class="sval" id="s-gap"></div>
+        <div class="ssub" id="s-gap-sub"></div>
+      </div>
+      <div class="stat" id="stat-buffer">
+        <div class="slbl">Cash Reserve</div>
+        <div class="sval" id="s-buffer"></div>
+        <div class="ssub" id="s-buffer-sub"></div>
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card">
+      <div class="chart-header">
+        <p class="card-label" style="margin-bottom:0">12-Month Cash Balance Projection</p>
+        <div class="legend">
+          <span class="leg"><span class="leg-line best"></span>Best Case</span>
+          <span class="leg"><span class="leg-line likely"></span>Likely</span>
+          <span class="leg"><span class="leg-line worst"></span>Worst Case</span>
+        </div>
+      </div>
+      <div class="chart-container" id="chart-container">
+        <canvas id="cf-chart"></canvas>
+        <div class="chart-tip" id="chart-tip"></div>
+      </div>
+      <p style="font-size:.65rem;color:var(--charcoal-3);margin-top:10px;text-align:center;letter-spacing:.04em">
+        Hover to see month-by-month balances · Worst case: client delay + unexpected expense + quarterly tax surprise (if no set-aside)
+      </p>
+    </div>
+
+    <!-- Insights -->
+    <div class="card">
+      <p class="card-label">What This Means for Your Business</p>
+      <ul class="insight-list" id="insight-list"></ul>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-card">
+      <p>Need help recording your loans accurately? Want to pay down your debt faster? We can help!</p>
+      <a href="https://calendar.app.google/VLFZfaGbNs35tkzP8" target="_blank" rel="noopener" class="cta-btn">Book a Free Consultation</a>
+    </div>
+
+  </div><!-- /results -->
+</div><!-- /wrap -->
+
+<footer>
+  Clear Cents Bookkeeping · Making Clear Cents of your Business Books<br>
+  <span>This calculator is for illustrative purposes only and does not constitute financial advice.</span>
+</footer>
+
+<script>
+/* ══ HELPERS ══ */
+function $(id) { return document.getElementById(id); }
+
+function fmtMoney(n, showSign) {
+  const abs = '$' + Math.round(Math.abs(n)).toLocaleString('en-US');
+  if (showSign) return (n >= 0 ? '+' : '−') + abs;
+  return (n < 0 ? '−' : '') + abs;
+}
+function fmtK(n) {
+  const sign = n < 0 ? '−' : '';
+  const abs = Math.abs(n);
+  if (abs >= 1e6) return sign + '$' + (abs / 1e6).toFixed(1) + 'M';
+  if (abs >= 1000) return sign + '$' + Math.round(abs / 1000) + 'k';
+  return sign + '$' + Math.round(abs);
+}
+
+function err(id) {
+  const el = $(id);
+  el.classList.add('shake');
+  el.focus();
+  setTimeout(() => el.classList.remove('shake'), 500);
+}
+
+/* ══ PROJECTION MODEL ══ */
+function buildProjection(startCash, revenue, expenses, recvDays, payDay, ownerPay, taxPct, overdue) {
+  const trueExpenses  = expenses + ownerPay;
+  const grossNet      = revenue - trueExpenses;
+  const monthlyTaxSave = grossNet > 0 ? grossNet * (taxPct / 100) : 0;
+  const monthlyNet    = grossNet - monthlyTaxSave;
+
+  // Estimated quarterly tax bill if NOT setting aside (worst-case surprise)
+  const estQtrTax = grossNet > 0 && taxPct === 0 ? grossNet * 3 * 0.27 : 0;
+
+  const gapDays    = Math.max(0, recvDays - payDay);
+  const floatNeeded = (gapDays / 30) * revenue;
+
+  const best   = [startCash];
+  const likely = [startCash];
+  const worst  = [startCash];
+
+  for (let m = 1; m <= 12; m++) {
+    // Overdue recovery: best collects most upfront, worst collects little
+    const overdBest   = m === 1 ? overdue * 0.85 : 0;
+    const overdLikely = m === 1 ? overdue * 0.45 : m === 2 ? overdue * 0.15 : 0;
+    const overdWorst  = m === 1 ? overdue * 0.25 : 0;
+
+    // Quarterly tax surprise (worst case only, if no set-aside)
+    const taxSurprise = estQtrTax > 0 && [3, 6, 9, 12].includes(m) ? estQtrTax : 0;
+
+    // Best: on-time payments, tax set-aside in place, good overdue recovery
+    best.push(best[m - 1] + monthlyNet + overdBest);
+
+    // Likely: 10% revenue friction, minor expense creep, partial overdue recovery
+    const likelyNet = revenue * 0.90 - trueExpenses * 1.05 - monthlyTaxSave;
+    likely.push(likely[m - 1] + likelyNet + overdLikely);
+
+    // Worst: crisis month 2 + quarterly tax surprise + poor overdue recovery
+    let wRev = revenue * 0.88;
+    let wExp = trueExpenses * 1.08;
+    if (m === 2) { wRev = revenue * 0.50; wExp = trueExpenses * 1.22; }
+    if (m === 3) { wRev = revenue * 1.10; wExp = trueExpenses * 1.05; }
+    worst.push(worst[m - 1] + wRev - wExp - taxSurprise + overdWorst);
+  }
+
+  return { best, likely, worst, monthlyNet, grossNet, trueExpenses,
+           gapDays, floatNeeded, monthlyTaxSave, estQtrTax };
+}
+
+/* ══ CALCULATE ══ */
+function calculate() {
+  const revenue  = parseFloat($('revenue').value);
+  const expenses = parseFloat($('expenses').value);
+  const cash     = parseFloat($('cash').value);
+  const recvDays = parseFloat($('recv-days').value) || 0;
+  const payDay   = parseFloat($('pay-day').value)   || 1;
+  const ownerPay = parseFloat($('owner-pay').value) || 0;
+  const taxPct   = parseFloat($('tax-pct').value)   || 0;
+  const overdue  = parseFloat($('overdue').value)   || 0;
+
+  if (!revenue  || revenue  <= 0) { err('revenue');  return; }
+  if (!expenses || expenses <= 0) { err('expenses'); return; }
+  if (isNaN(cash) || cash < 0)   { err('cash');     return; }
+
+  const proj = buildProjection(cash, revenue, expenses, recvDays, payDay, ownerPay, taxPct, overdue);
+  const { monthlyNet, grossNet, trueExpenses, gapDays, floatNeeded, monthlyTaxSave, estQtrTax } = proj;
+
+  /* ── Stat: True Monthly Net ── */
+  $('stat-net').className    = 'stat ' + (monthlyNet >= 0 ? 'g' : 'r');
+  $('s-net').textContent     = fmtMoney(monthlyNet, true);
+  $('s-net-sub').textContent = ownerPay > 0 ? 'after owner pay & taxes' : monthlyNet >= 0 ? 'surplus per month' : 'deficit per month';
+
+  /* ── Stat: Cash Runway ── */
+  let runwayText, runwaySub, runwayClass;
+  if (monthlyNet >= 0) {
+    runwayText = '12+ mo'; runwaySub = 'revenue covers expenses'; runwayClass = 'g';
+  } else {
+    const mos = cash / Math.abs(monthlyNet);
+    runwayText  = mos < 1 ? '< 1 mo' : mos.toFixed(1) + ' mo';
+    runwaySub   = mos < 1 ? 'cash nearly gone' : 'until cash runs out';
+    runwayClass = mos < 3 ? 'r' : mos < 6 ? 'a' : 'g';
+  }
+  $('stat-runway').className    = 'stat ' + runwayClass;
+  $('s-runway').textContent     = runwayText;
+  $('s-runway-sub').textContent = runwaySub;
+
+  /* ── Stat: Timing Gap ── */
+  $('stat-gap').className    = 'stat ' + (gapDays > 20 ? 'r' : gapDays > 5 ? 'a' : 'g');
+  $('s-gap').textContent     = gapDays === 0 ? 'None' : gapDays + ' days';
+  $('s-gap-sub').textContent = gapDays === 0 ? 'no float pressure' : '~' + fmtMoney(floatNeeded) + ' tied up in transit';
+
+  /* ── Stat: Cash Reserve ── */
+  const bufferMos = cash / trueExpenses;
+  $('stat-buffer').className    = 'stat ' + (bufferMos >= 3 ? 'g' : bufferMos >= 1 ? 'a' : 'r');
+  $('s-buffer').textContent     = bufferMos >= 12 ? '12+ mo' : bufferMos.toFixed(1) + ' mo';
+  $('s-buffer-sub').textContent = 'of expenses in reserve';
+
+  /* ── Insights ── */
+  const insights = [];
+
+  // 1. Core profitability
+  if (monthlyNet < 0) {
+    const mosTilEmpty = (cash / Math.abs(monthlyNet)).toFixed(1);
+    insights.push({
+      type: 'danger', icon: '⚠️',
+      title: `True expenses exceed revenue by ${fmtMoney(Math.abs(monthlyNet))}/month`,
+      body: `At this pace your cash lasts roughly ${mosTilEmpty} more months. For contractors and real estate professionals, this often surfaces when a big project wraps up and the next one hasn't started — but the bills keep coming.`,
+      nudge: 'Are these numbers accurate? Small errors here compound quickly.'
+    });
+  } else {
+    insights.push({
+      type: 'good', icon: '✓',
+      title: `You're netting ${fmtMoney(monthlyNet)}/month after all obligations`,
+      body: `That's the foundation of a healthy business. The real question is whether this surplus is consistent — or whether slow seasons, commission gaps, or project delays quietly erode it month to month.`,
+      nudge: 'Does this number hold in your three slowest months of the year?'
+    });
+  }
+
+  // 2. Owner pay
+  if (ownerPay === 0) {
+    insights.push({
+      type: 'warn', icon: '💰',
+      title: "You're not paying yourself — and that makes your numbers look better than they are",
+      body: `Every hour you work has a value. When owner pay isn't in the books, your profit is overstated and you can't see whether the business is truly sustainable. Paying yourself what you deserve is the first step to knowing your real picture.`,
+      nudge: 'What would you have to pay someone else to do what you do?'
+    });
+  } else if (grossNet > 0 && grossNet < ownerPay * 1.3) {
+    insights.push({
+      type: 'warn', icon: '💰',
+      title: `Owner pay is ${Math.round(ownerPay / grossNet * 100)}% of your net — thin margin`,
+      body: `You're paying yourself ${fmtMoney(ownerPay)}/month, which consumes most of what the business earns before taxes. Any slow month or unexpected expense eliminates the surplus. A cash flow plan builds the buffer that protects your paycheck.`,
+      nudge: null
+    });
+  } else if (ownerPay > 0) {
+    insights.push({
+      type: 'good', icon: '💰',
+      title: `Paying yourself ${fmtMoney(ownerPay)}/month — and the business supports it`,
+      body: `That's a sign of a healthy business. Many owners skip their own paycheck to make the numbers look better, which masks the real health of the operation. You're measuring it correctly.`,
+      nudge: null
+    });
+  }
+
+  // 3. Quarterly taxes
+  if (taxPct === 0 && grossNet > 0) {
+    const qtrOwed = Math.round(grossNet * 3 * 0.27);
+    insights.push({
+      type: 'danger', icon: '📋',
+      title: 'No tax set-aside — a quarterly surprise waiting to happen',
+      body: `Based on your net, you could owe roughly ${fmtMoney(qtrOwed)} in estimated taxes every quarter. That's a cash hit 4 times a year with no warning — which is exactly what the worst-case line on the chart reflects. The IRS also charges penalties on top of that.`,
+      nudge: 'When did you last review your estimated tax payments?'
+    });
+  } else if (taxPct > 0 && taxPct < 20) {
+    insights.push({
+      type: 'warn', icon: '📋',
+      title: `Setting aside ${taxPct}% for taxes — may not be enough`,
+      body: `You're building the right habit. But self-employed business owners typically owe 25–30% of net profit when you factor in self-employment tax and income tax. At your current net, that gap could be ${fmtMoney(Math.max(0, grossNet * 0.25 - monthlyTaxSave))}/month.`,
+      nudge: 'Has your tax set-aside ever fallen short at filing time?'
+    });
+  } else if (taxPct >= 20) {
+    insights.push({
+      type: 'good', icon: '📋',
+      title: `${taxPct}% tax set-aside — no quarterly surprises`,
+      body: `You're setting aside ${fmtMoney(monthlyTaxSave)}/month — that's ${fmtMoney(monthlyTaxSave * 3)} ready when estimated taxes are due each quarter. This is one of the most underrated advantages of disciplined bookkeeping.`,
+      nudge: null
+    });
+  }
+
+  // 4. Overdue receivables
+  if (overdue > 0) {
+    const writeOff = Math.round(overdue * 0.25);
+    insights.push({
+      type: 'warn', icon: '📄',
+      title: `${fmtMoney(overdue)} in outstanding invoices — not the same as cash`,
+      body: `Industry averages suggest 20–30% of aging receivables eventually go uncollected. That's potentially ${fmtMoney(writeOff)} that never arrives. For contractors especially, a single client who ghosts on a final payment can unravel months of profit.`,
+      nudge: 'Do you have a collections process, or does follow-up happen informally?'
+    });
+  }
+
+  // 5. Timing gap
+  if (gapDays > 20) {
+    insights.push({
+      type: 'danger', icon: '⏳',
+      title: `${gapDays}-day gap between paying bills and collecting payment`,
+      body: `You're floating roughly ${fmtMoney(floatNeeded)} every month — money that's yours but not in your account. This is especially common in contracting and real estate, where payment milestones, closings, and commission schedules create natural gaps that can strangle even profitable businesses.`,
+      nudge: 'Do you know exactly when each of your largest payments lands?'
+    });
+  } else if (gapDays > 5) {
+    insights.push({
+      type: 'warn', icon: '⏳',
+      title: `${gapDays}-day timing gap — small but real`,
+      body: `About ${fmtMoney(floatNeeded)} of your cash is in transit at any given time. It won't sink you, but it quietly reduces your real buffer and makes tight months tighter.`,
+      nudge: null
+    });
+  }
+
+  // 6. Reserve
+  if (bufferMos < 1) {
+    insights.push({
+      type: 'danger', icon: '🔴',
+      title: 'Less than one month of expenses in reserve',
+      body: "One slow close, one delayed commission, one large unexpected bill — and you're scrambling. Building even 60 days of reserves changes how you operate, how you negotiate, and how you sleep.",
+      nudge: 'What would happen if your biggest deal fell through this month?'
+    });
+  } else if (bufferMos < 3) {
+    insights.push({
+      type: 'warn', icon: '🟡',
+      title: `${bufferMos.toFixed(1)} months of expenses covered`,
+      body: "The benchmark is 3 months. You're in range, but one rough quarter could expose the gap. A cash flow plan builds this cushion deliberately — before you need it.",
+      nudge: 'Is this number what you expected?'
+    });
+  } else {
+    insights.push({
+      type: 'good', icon: '✅',
+      title: `${bufferMos.toFixed(1)} months of reserves — a strong position`,
+      body: 'You have real protection against surprises. The next question is whether that cash is working for you — paying down high-interest debt, funding growth, or at minimum earning interest.',
+      nudge: null
+    });
+  }
+
+  // 7. Worst-case floor
+  const worstMin = Math.min(...proj.worst);
+  if (worstMin < 0) {
+    insights.push({
+      type: 'warn', icon: '📉',
+      title: 'Worst case: your balance goes negative',
+      body: `If a major client delays, an unexpected expense hits, and quarterly taxes arrive in the same stretch — your balance could drop to ${fmtMoney(worstMin)}. That's not a prediction. It's a scenario worth having a plan for.`,
+      nudge: 'Has something like this happened before?'
+    });
+  }
+
+  $('insight-list').innerHTML = insights.map(ins => `
+    <li class="insight-item ${ins.type}">
+      <span class="insight-icon">${ins.icon}</span>
+      <div class="insight-body">
+        <strong>${ins.title}</strong>
+        <p>${ins.body}</p>
+        ${ins.nudge ? `<span class="insight-nudge">${ins.nudge}</span>` : ''}
+      </div>
+    </li>
+  `).join('');
+
+  /* ── Show & draw ── */
+  const el = $('results');
+  el.className = 'results on';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    drawChart(proj, trueExpenses);
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
+}
+
+/* ══ CHART ══ */
+const PAD = { top: 20, right: 24, bottom: 46, left: 78 };
+
+function drawChart(proj, expenses) {
+  const canvas    = $('cf-chart');
+  const container = $('chart-container');
+  const dpr = window.devicePixelRatio || 1;
+  const W   = container.clientWidth;
+  const H   = container.clientHeight;
+
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top  - PAD.bottom;
+
+  const allVals = [...proj.best, ...proj.likely, ...proj.worst];
+  const rawMax  = Math.max(...allVals, 0);
+  const rawMin  = Math.min(...allVals, 0);
+  // Nice padding on range
+  const range   = (rawMax - rawMin) || 1;
+  const maxY    = rawMax + range * 0.08;
+  const minY    = rawMin - range * 0.04;
+  const span    = maxY - minY;
+
+  const toX = m => PAD.left + (m / 12) * cW;
+  const toY = v => PAD.top  + (1 - (v - minY) / span) * cH;
+
+  /* Grid */
+  const STEPS = 5;
+  ctx.font      = '10px Josefin Sans, sans-serif';
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= STEPS; i++) {
+    const v = minY + (span / STEPS) * i;
+    const y = toY(v);
+    ctx.strokeStyle = 'rgba(220,229,220,.8)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+    ctx.fillStyle = '#9a9b9b';
+    ctx.fillText(fmtK(v), PAD.left - 6, y + 4);
+  }
+
+  /* Month labels */
+  const MO_LABELS = ['Mo 1','Mo 2','Mo 3','Mo 4','Mo 5','Mo 6',
+                     'Mo 7','Mo 8','Mo 9','Mo 10','Mo 11','Mo 12'];
+  ctx.fillStyle = '#9a9b9b';
+  ctx.font = '10px Josefin Sans, sans-serif';
+  ctx.textAlign = 'center';
+  // "Now" label
+  ctx.fillText('Now', toX(0), H - PAD.bottom + 16);
+  for (let m = 1; m <= 12; m++) {
+    // skip every other label on narrow charts
+    if (W < 500 && m % 2 === 0) continue;
+    ctx.fillText(MO_LABELS[m - 1], toX(m), H - PAD.bottom + 16);
+  }
+
+  /* Zero line + danger zone */
+  if (minY < 0 && maxY > 0) {
+    const y0 = toY(0);
+    ctx.fillStyle = 'rgba(220,38,38,.05)';
+    ctx.fillRect(PAD.left, y0, cW, toY(rawMin) - y0 + 4);
+
+    ctx.strokeStyle = 'rgba(220,38,38,.35)';
+    ctx.lineWidth   = 1.5;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath(); ctx.moveTo(PAD.left, y0); ctx.lineTo(PAD.left + cW, y0); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = 'rgba(220,38,38,.45)';
+    ctx.font = '9px Josefin Sans, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('$0', PAD.left - 6, y0 - 3);
+  }
+
+  /* 1-month reserve warning line */
+  if (expenses > minY && expenses < maxY) {
+    const yR = toY(expenses);
+    ctx.strokeStyle = 'rgba(217,119,6,.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(PAD.left, yR); ctx.lineTo(PAD.left + cW, yR); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(217,119,6,.55)';
+    ctx.font = '9px Josefin Sans, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('1 mo reserve', PAD.left - 4, yR - 3);
+  }
+
+  /* Fill area under best case */
+  ctx.beginPath();
+  proj.best.forEach((v, m) => {
+    const x = toX(m), y = toY(v);
+    m === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.lineTo(toX(12), toY(Math.max(minY, 0)));
+  ctx.lineTo(toX(0),  toY(Math.max(minY, 0)));
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(49,114,56,.07)';
+  ctx.fill();
+
+  /* Lines */
+  function drawLine(series, color, dash) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth   = 2.5;
+    ctx.lineJoin    = 'round';
+    ctx.setLineDash(dash || []);
+    ctx.beginPath();
+    series.forEach((v, m) => {
+      m === 0 ? ctx.moveTo(toX(m), toY(v)) : ctx.lineTo(toX(m), toY(v));
+    });
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  drawLine(proj.worst,  '#dc2626', [7, 4]);
+  drawLine(proj.likely, '#d97706');
+  drawLine(proj.best,   '#317238');
+
+  /* Dots */
+  function drawDots(series, color) {
+    ctx.fillStyle = color;
+    series.forEach((v, m) => {
+      ctx.beginPath();
+      ctx.arc(toX(m), toY(v), 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+  drawDots(proj.best,   '#317238');
+  drawDots(proj.likely, '#d97706');
+  drawDots(proj.worst,  '#dc2626');
+
+  /* Tooltip */
+  const tip = $('chart-tip');
+  canvas.onmousemove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx   = e.clientX - rect.left;
+    const m    = Math.round((mx - PAD.left) / cW * 12);
+    if (m < 0 || m > 12) { tip.style.display = 'none'; return; }
+
+    tip.style.display = 'block';
+    tip.style.left    = toX(m) + 'px';
+    tip.style.top     = Math.min(toY(proj.likely[m]), toY(proj.best[m]), toY(proj.worst[m])) + 'px';
+
+    const fmt = v => (v < 0 ? '−' : '') + '$' + Math.round(Math.abs(v)).toLocaleString();
+    const label = m === 0 ? 'Now' : 'Month ' + m;
+    tip.innerHTML = `
+      <div class="tip-month">${label}</div>
+      <div class="tip-row"><span class="tip-lbl">Best</span><span class="tip-val tip-green">${fmt(proj.best[m])}</span></div>
+      <div class="tip-row"><span class="tip-lbl">Likely</span><span class="tip-val tip-amber">${fmt(proj.likely[m])}</span></div>
+      <div class="tip-row"><span class="tip-lbl">Worst</span><span class="tip-val tip-red">${fmt(proj.worst[m])}</span></div>
+    `;
+  };
+  canvas.onmouseleave = () => { tip.style.display = 'none'; };
+}
+</script>
+</body>
+</html>
